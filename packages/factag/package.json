@@ -1,47 +1,57 @@
 {
   "name": "factag",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Fact-Augmented Generation — extract facts once, inject on every call. A RAG-shaped grounding library with zero runtime dependencies.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
+    "./package.json": "./package.json",
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./documents": {
       "types": "./dist/documents.d.ts",
-      "import": "./dist/documents.js"
+      "import": "./dist/documents.js",
+      "default": "./dist/documents.js"
     },
     "./loaders": {
       "types": "./dist/loaders/index.d.ts",
-      "import": "./dist/loaders/index.js"
+      "import": "./dist/loaders/index.js",
+      "default": "./dist/loaders/index.js"
     },
     "./splitters": {
       "types": "./dist/splitters/index.d.ts",
-      "import": "./dist/splitters/index.js"
+      "import": "./dist/splitters/index.js",
+      "default": "./dist/splitters/index.js"
     },
     "./extractors": {
       "types": "./dist/extractors/index.d.ts",
-      "import": "./dist/extractors/index.js"
+      "import": "./dist/extractors/index.js",
+      "default": "./dist/extractors/index.js"
     },
     "./stores": {
       "types": "./dist/stores/index.d.ts",
-      "import": "./dist/stores/index.js"
+      "import": "./dist/stores/index.js",
+      "default": "./dist/stores/index.js"
     },
     "./stores/sqlite": {
       "types": "./dist/stores/sqlite.d.ts",
-      "import": "./dist/stores/sqlite.js"
+      "import": "./dist/stores/sqlite.js",
+      "default": "./dist/stores/sqlite.js"
     },
     "./retrievers": {
       "types": "./dist/retrievers/index.d.ts",
-      "import": "./dist/retrievers/index.js"
+      "import": "./dist/retrievers/index.js",
+      "default": "./dist/retrievers/index.js"
     },
     "./pipeline": {
       "types": "./dist/pipeline/index.d.ts",
-      "import": "./dist/pipeline/index.js"
+      "import": "./dist/pipeline/index.js",
+      "default": "./dist/pipeline/index.js"
     }
   },
   "files": [

@@ -2,6 +2,8 @@
 
 **Fact-Augmented Generation (FAG)** — extract facts once, inject on every call. A RAG-shaped grounding library with zero runtime dependencies: loaders → recursive heading splitter → extractor (LLM or zero-key heuristic) → normalizer → fact store → budget assembler.
 
+> **CommonJS:** `require('factag')` works on Node.js ≥ 22.12 (and 20.19+ with `--experimental-require-module`). Prefer ESM imports.
+
 ```ts
 import { DirectoryLoader, RecursiveHeadingSplitter, HeuristicExtractor, MemoryFactStore, BudgetAssembler, runIngest } from "factag";
 
