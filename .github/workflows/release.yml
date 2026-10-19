@@ -1,0 +1,58 @@
+# Trusted Publishing — publish on tag push, no long-lived tokens.
+# Requires (one-time, by repo owner):
+#   npmjs.com  → package settings → Trusted Publisher → GitHub Actions
+#                owner: <GITHUB_OWNER>  repo: fact-augmented-generation
+#                workflow: release.yml  environment: (blank)
+#   pypi.org   → project factag → Publishing → Add trusted publisher
+#                owner: <GITHUB_OWNER>  repo: fact-augmented-generation
+#                workflow: release.yml  environment: (blank)
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm run firewall
+      - name: Publish factag
+        run: npm publish --provenance --access public
+        working-directory: packages/factag
+      - name: Publish factag-cli
+        run: npm publish --provenance --access public
+        working-directory: packages/factag-cli
+      - name: Publish factag-langchain
+        run: npm publish --provenance --access public
+        working-directory: packages/factag-langchain
+
+  publish-pypi:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: python/factag
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m unittest discover -s tests -v
+      - run: pip install build
+      - run: python -m build
+      - uses: pypa/gh-action-pypi-publish@release/v1

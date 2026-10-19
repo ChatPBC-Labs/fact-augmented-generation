@@ -1,0 +1,49 @@
+{
+  "name": "factag-langchain",
+  "version": "0.1.0",
+  "description": "Drop-in FagRetriever for LangChain — serve verified FAG facts wherever a retriever is expected.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test \"tests/*.test.mjs\""
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "fag",
+    "langchain",
+    "retriever",
+    "fact-augmented-generation",
+    "rag"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/factag-generator/fact-augmented-generation.git"
+  },
+  "dependencies": {
+    "factag": "^0.1.0"
+  },
+  "peerDependencies": {
+    "@langchain/core": ">=0.3.0"
+  },
+  "devDependencies": {
+    "@langchain/core": "^1.2.18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

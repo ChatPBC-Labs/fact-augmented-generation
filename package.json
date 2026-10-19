@@ -1,0 +1,28 @@
+{
+  "name": "fact-augmented-generation",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Fact-Augmented Generation (FAG) — extract facts once, inject on every call. A RAG-shaped alternative for bounded knowledge.",
+  "license": "Apache-2.0",
+  "workspaces": [
+    "packages/factag",
+    "packages/factag-cli",
+    "packages/factag-langchain"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:python": "cd python/factag && python -m unittest discover -s tests",
+    "firewall": "node .github/scripts/firewall-check.mjs",
+    "verify": "npm run build && npm run test && npm run firewall"
+  },
+  "devDependencies": {
+    "@langchain/core": "^1.2.18",
+    "@types/node": "^22.20.5",
+    "typescript": "^5.9.3"
+  }
+}

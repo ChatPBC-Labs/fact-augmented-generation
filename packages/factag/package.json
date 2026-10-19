@@ -1,0 +1,82 @@
+{
+  "name": "factag",
+  "version": "0.1.0",
+  "description": "Fact-Augmented Generation — extract facts once, inject on every call. A RAG-shaped grounding library with zero runtime dependencies.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./documents": {
+      "types": "./dist/documents.d.ts",
+      "import": "./dist/documents.js"
+    },
+    "./loaders": {
+      "types": "./dist/loaders/index.d.ts",
+      "import": "./dist/loaders/index.js"
+    },
+    "./splitters": {
+      "types": "./dist/splitters/index.d.ts",
+      "import": "./dist/splitters/index.js"
+    },
+    "./extractors": {
+      "types": "./dist/extractors/index.d.ts",
+      "import": "./dist/extractors/index.js"
+    },
+    "./stores": {
+      "types": "./dist/stores/index.d.ts",
+      "import": "./dist/stores/index.js"
+    },
+    "./stores/sqlite": {
+      "types": "./dist/stores/sqlite.d.ts",
+      "import": "./dist/stores/sqlite.js"
+    },
+    "./retrievers": {
+      "types": "./dist/retrievers/index.d.ts",
+      "import": "./dist/retrievers/index.js"
+    },
+    "./pipeline": {
+      "types": "./dist/pipeline/index.d.ts",
+      "import": "./dist/pipeline/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test \"tests/*.test.mjs\""
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "fag",
+    "fact-augmented-generation",
+    "rag",
+    "llm",
+    "grounding",
+    "context-engineering",
+    "prompt",
+    "facts",
+    "retrieval-free",
+    "ai"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/factag-generator/fact-augmented-generation.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.9.3"
+  }
+}

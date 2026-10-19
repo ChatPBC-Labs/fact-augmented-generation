@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "factag"
+version = "0.1.0"
+description = "Fact-Augmented Generation (FAG) — RAG-shaped load → split → extract → normalize → store → assemble pipeline for verified facts. Pure standard library."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [{ name = "FAG contributors" }]
+requires-python = ">=3.10"
+keywords = [
+    "fag",
+    "fact-augmented-generation",
+    "rag-alternative",
+    "llm",
+    "grounding",
+    "fact-extraction",
+    "retrieval",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Indexing",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/factag-generator/fact-augmented-generation"
+Repository = "https://github.com/factag-generator/fact-augmented-generation"
+Issues = "https://github.com/factag-generator/fact-augmented-generation/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["factag"]
