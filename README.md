@@ -20,6 +20,28 @@ RAG's production failure mode is retrieval: the right chunk exists, but the wron
 
 When your knowledge doesn't fit a prompt budget, a keyword overflow retriever kicks in — the escape hatch, not the default.
 
+## What FAG can do (the full capability map)
+
+| Capability | Where it lives | Status |
+|---|---|---|
+| Ingest URLs, sitemap.xml trees, local dirs, raw text/HTML | `URLLoader` · `SitemapLoader` · `DirectoryLoader` · `TextLoader` | verified |
+| Heading-aware chunking that never splits inside a sentence | `RecursiveHeadingSplitter` | verified |
+| Zero-key fact extraction (numbers, prices, dates, specs, definitions) | `HeuristicExtractor` | verified |
+| Bring-your-own-LLM extraction (any OpenAI-compatible endpoint) | `LLMExtractor` | verified |
+| Stores: memory / portable JSONL / SQLite | `MemoryFactStore` · `FileFactStore` · `SqliteFactStore` | verified |
+| Cross-run dedupe — re-ingest anything, nothing duplicates | `runIngest` → `factKey` | verified |
+| Token-budget context assembly (`=== VERIFIED FACTS ===` block) | `BudgetAssembler` | verified |
+| Keyword overflow retriever for oversized stores | `KeywordRetriever` | verified |
+| **Continuous website monitoring** — change → re-extract → dedupe → prune | `pollSource` · `WatchSession` · `factag watch` | verified |
+| Prune stale facts the site no longer reports | `--prune` / `pruneStale` + `store.removeWhere` | verified |
+| Bot-protected sites (browser UA) | `--user-agent` / `headers` | verified |
+| LangChain drop-in retriever | `factag-langchain` (`FagRetriever`) | verified |
+| Grounded CLI answers (`factag ask`) with refusal outside the facts | `factag-cli` | verified |
+| Cross-runtime parity: TS writes a store, Python reads it byte-identically | TS ⇄ Python JSONL contract | verified |
+| Python end-to-end twin (load/split/extract/watch) | PyPI `factag` | verified |
+
+· Every row was verified against the real registries and live websites, not on paper. Verification logs live in this repo's docs.
+
 ## Install
 
 ```bash

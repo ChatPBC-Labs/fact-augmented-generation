@@ -1,6 +1,6 @@
-"""factag — Fact-Augmented Generation.
+"""factag ? Fact-Augmented Generation.
 
-RAG-shaped pipeline: load → split → extract → normalize → store → assemble.
+RAG-shaped pipeline: load ? split ? extract ? normalize ? store ? assemble.
 Pure standard library. Zero keys required (HeuristicExtractor default).
 """
 
@@ -36,7 +36,7 @@ from .watcher import (
     stable_hash,
 )
 
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 
 __all__ = [
     "Document",
@@ -76,3 +76,4 @@ __all__ = [
     "PollResult",
     "VERSION",
 ]
+

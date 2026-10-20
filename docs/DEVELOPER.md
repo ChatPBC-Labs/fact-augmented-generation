@@ -2,6 +2,23 @@
 
 Everything needed to develop, test, and release FAG locally.
 
+## What FAG is, in one paragraph (why this code looks the way it does)
+
+FAG is a grounded-LLM knowledge pipeline shaped like RAG but without retrieval.
+Anything a user can point a URL or a folder at gets turned into **single-sentence
+facts** with `importance`, `category` and `sourceUrl`; the LLM context is the
+fact list itself, capped by a character budget. There is no vector DB, no
+embeddings model and no ranker service to deploy — the store is memory, JSONL
+or SQLite, and re-ingesting anything never duplicates a fact. Because facts are
+source-attributed, a store can *follow a website*: FAG Watch re-checks a target
+on an interval, adds what is new, and (optionally) deletes what the site no
+longer says. Anything you change must preserve those invariants:
+
+1. `factKey` cross-run dedupe — same source + same normalized text never republishes.
+2. `PollResult.added === IngestResult.kept` (already store-new; do not re-subtract).
+3. Byte-identical JSONL wire contract between TS and Python.
+4. Watch interval floor 5000 ms, everywhere (core + CLI + Python twin).
+
 ## Monorepo layout
 
 ```
@@ -28,8 +45,8 @@ python -m pip install build hatchling   # only needed to build the PyPI package
 | Command | What it does |
 |---|---|
 | `npm run build` | tsc for all 3 npm packages |
-| `npm test` | node:test suites in all packages (factag 41, cli 3, langchain 4) |
-| `npm run test:python` | python unittest suite (20 tests) |
+| `npm test` | node:test suites in all packages (factag 51, cli 3, langchain 4) |
+| `npm run test:python` | python unittest suite (28 tests incl. watcher twins) |
 | `npm run firewall` | scans every file for banned strings (must be 0 hits) |
 | `npm run verify` | build + test + firewall — run before every commit |
 

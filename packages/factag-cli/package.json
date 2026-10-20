@@ -1,6 +1,6 @@
 {
   "name": "factag-cli",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "CLI for Fact-Augmented Generation â€” index sources into facts, assemble verified-facts context for any LLM.",
   "license": "Apache-2.0",
   "type": "module",
@@ -32,7 +32,7 @@
     "url": "git+https://github.com/qfg5182-ui/fact-augmented-generation.git"
   },
   "dependencies": {
-    "factag": "^0.1.0"
+    "factag": "^0.1.4"
   },
   "publishConfig": {
     "access": "public"

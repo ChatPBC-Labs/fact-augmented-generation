@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { mkdir, stat } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import {
   BudgetAssembler,
@@ -15,6 +16,10 @@ import {
   runIngest,
   VERSION,
 } from "factag";
+
+const require = createRequire(import.meta.url);
+const { version: CLI_VERSION } = require("../package.json") as { version: string };
+const BANNER = `factag-cli ${CLI_VERSION} (core factag ${VERSION})`;
 
 interface Args {
   positional: string[];
@@ -64,7 +69,7 @@ function fail(message: string): never {
   process.exit(1);
 }
 
-const HELP = `factag ${VERSION} — Fact-Augmented Generation CLI
+const HELP = `${BANNER} — Fact-Augmented Generation CLI
 
 Usage:
   factag index <url|sitemap.xml|path> [options]   ingest a source into a fact store
@@ -316,7 +321,7 @@ async function main(): Promise<void> {
     return;
   }
   if (command === "version" || command === "--version" || command === "-v") {
-    process.stdout.write(VERSION + "\n");
+    process.stdout.write(BANNER + "\n");
     return;
   }
   if (command === "index") {

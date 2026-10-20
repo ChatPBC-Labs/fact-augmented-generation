@@ -12,8 +12,9 @@ function run(...args) {
   return execFileSync(process.execPath, [CLI, ...args], { encoding: "utf8" });
 }
 
-test("factag version prints semver", () => {
-  assert.match(run("version"), /^0\.\d+\.\d+/);
+test("factag version prints cli version + core semver", () => {
+  const out = run("version");
+  assert.match(out, /^factag-cli \d+\.\d+\.\d+ \(core factag \d+\.\d+\.\d+\)/);
 });
 
 test("factag help lists commands", () => {
