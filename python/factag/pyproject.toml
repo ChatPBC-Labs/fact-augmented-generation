@@ -33,9 +33,9 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/factag-generator/fact-augmented-generation"
-Repository = "https://github.com/factag-generator/fact-augmented-generation"
-Issues = "https://github.com/factag-generator/fact-augmented-generation/issues"
+Homepage = "https://github.com/qfg5182-ui/fact-augmented-generation"
+Repository = "https://github.com/qfg5182-ui/fact-augmented-generation"
+Issues = "https://github.com/qfg5182-ui/fact-augmented-generation/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["factag"]

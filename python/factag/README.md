@@ -1,6 +1,6 @@
 # factag (Python)
 
-Python twin of the TypeScript [`factag`](https://www.npmjs.com/package/factag) package — same stage names, same JSONL fact-store format, same `=== VERIFIED FACTS ===` context block. Zero dependencies, standard library only.
+Python twin of the TypeScript [`factag`](https://www.npmjs.com/package/factag) package â€” same stage names, same JSONL fact-store format, same `=== VERIFIED FACTS ===` context block. Zero dependencies, standard library only.
 
 ```python
 import asyncio
@@ -27,4 +27,4 @@ asyncio.run(main())
 
 Install: `pip install factag`
 
-Full documentation, design principles and the FAG spec: see the [repository README](https://github.com/factag-generator/fact-augmented-generation).
+Full documentation, design principles and the FAG spec: see the [repository README](https://github.com/qfg5182-ui/fact-augmented-generation).

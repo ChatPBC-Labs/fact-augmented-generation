@@ -1,7 +1,7 @@
 {
   "name": "factag-cli",
   "version": "0.1.4",
-  "description": "CLI for Fact-Augmented Generation — index sources into facts, assemble verified-facts context for any LLM.",
+  "description": "CLI for Fact-Augmented Generation â€” index sources into facts, assemble verified-facts context for any LLM.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/cli.js",
@@ -29,7 +29,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/factag-generator/fact-augmented-generation.git"
+    "url": "git+https://github.com/qfg5182-ui/fact-augmented-generation.git"
   },
   "dependencies": {
     "factag": "^0.1.0"

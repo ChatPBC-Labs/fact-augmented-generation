@@ -1,7 +1,7 @@
 {
   "name": "factag-langchain",
   "version": "0.1.2",
-  "description": "Drop-in FagRetriever for LangChain — serve verified FAG facts wherever a retriever is expected.",
+  "description": "Drop-in FagRetriever for LangChain â€” serve verified FAG facts wherever a retriever is expected.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -34,7 +34,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/factag-generator/fact-augmented-generation.git"
+    "url": "git+https://github.com/qfg5182-ui/fact-augmented-generation.git"
   },
   "dependencies": {
     "factag": "^0.1.3"

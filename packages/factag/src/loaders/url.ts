@@ -2,7 +2,7 @@ import { Document, Metadata } from "../documents.js";
 import { BaseLoader } from "./base.js";
 import { extractDescription, extractTitle, htmlToText, looksLikeHtml } from "./html.js";
 
-export const FACTAG_USER_AGENT = "FactAugmentedGeneration/0.1 (+https://github.com/factag-generator/factag)";
+export const FACTAG_USER_AGENT = "FactAugmentedGeneration/0.1 (+https://github.com/qfg5182-ui/fact-augmented-generation)";
 
 export interface URLOptions {
   headers?: Record<string, string>;

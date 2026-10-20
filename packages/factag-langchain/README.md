@@ -1,4 +1,4 @@
-﻿# factag-langchain
+# factag-langchain
 
 Drop-in FagRetriever for [LangChain](https://js.langchain.com) — serve verified FAG facts wherever a retriever is expected.
 
@@ -19,4 +19,4 @@ monitor bot-protected sites (a browser UA). Same in the core API:
 `WatchSession` / `pollSource` from `factag/watcher` accept
 `pruneStale` / `headers`.
 
-Docs: https://github.com/factag-generator/fact-augmented-generation
+Docs: https://github.com/qfg5182-ui/fact-augmented-generation

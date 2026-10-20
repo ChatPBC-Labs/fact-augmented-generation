@@ -5,12 +5,12 @@ from abc import ABC, abstractmethod
 
 from .documents import Document, Metadata, source_url_of
 
-FACTAG_USER_AGENT = "FactAugmentedGeneration/0.1 (+https://github.com/factag-generator/factag)"
+FACTAG_USER_AGENT = "FactAugmentedGeneration/0.1 (+https://github.com/qfg5182-ui/fact-augmented-generation)"
 
 _NAMED = {
     "amp": "&", "lt": "<", "gt": ">", "quot": '"', "apos": "'", "nbsp": " ",
-    "ndash": "–", "mdash": "—", "hellip": "…", "copy": "©", "reg": "®",
-    "trade": "™", "euro": "€", "pound": "£", "yen": "¥", "middot": "·", "bull": "•",
+    "ndash": "â€“", "mdash": "â€”", "hellip": "â€¦", "copy": "Â©", "reg": "Â®",
+    "trade": "â„¢", "euro": "â‚¬", "pound": "Â£", "yen": "Â¥", "middot": "Â·", "bull": "â€¢",
 }
 
 _DROP_ALWAYS = re.compile(

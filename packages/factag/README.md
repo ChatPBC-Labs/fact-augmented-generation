@@ -1,8 +1,8 @@
 # factag
 
-**Fact-Augmented Generation (FAG)** — extract facts once, inject on every call. A RAG-shaped grounding library with zero runtime dependencies: loaders → recursive heading splitter → extractor (LLM or zero-key heuristic) → normalizer → fact store → budget assembler.
+**Fact-Augmented Generation (FAG)** â€” extract facts once, inject on every call. A RAG-shaped grounding library with zero runtime dependencies: loaders â†’ recursive heading splitter â†’ extractor (LLM or zero-key heuristic) â†’ normalizer â†’ fact store â†’ budget assembler.
 
-> **CommonJS:** `require('factag')` works on Node.js ≥ 22.12 (and 20.19+ with `--experimental-require-module`). Prefer ESM imports.
+> **CommonJS:** `require('factag')` works on Node.js â‰¥ 22.12 (and 20.19+ with `--experimental-require-module`). Prefer ESM imports.
 
 ```ts
 import { DirectoryLoader, RecursiveHeadingSplitter, HeuristicExtractor, MemoryFactStore, BudgetAssembler, runIngest } from "factag";
@@ -21,10 +21,10 @@ const context = await new BudgetAssembler(store, { budget: 4000 }).toContext("wh
 // === END VERIFIED FACTS ===
 ```
 
-- `BudgetAssembler.assemble()` → `{ context, included, omitted, chars }`
-- `BudgetAssembler.invoke()` → facts (retriever-style)
-- `BudgetAssembler.toContext()` → the `=== VERIFIED FACTS ===` block
+- `BudgetAssembler.assemble()` â†’ `{ context, included, omitted, chars }`
+- `BudgetAssembler.invoke()` â†’ facts (retriever-style)
+- `BudgetAssembler.toContext()` â†’ the `=== VERIFIED FACTS ===` block
 - LangChain: use [`factag-langchain`](https://www.npmjs.com/package/factag-langchain) for a drop-in `FagRetriever`
 - Python: [`pip install factag`](https://pypi.org/project/factag/)
 
-Full docs and design principles: see the [repository](https://github.com/factag-generator/fact-augmented-generation).
+Full docs and design principles: see the [repository](https://github.com/qfg5182-ui/fact-augmented-generation).
