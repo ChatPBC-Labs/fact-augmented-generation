@@ -12,3 +12,5 @@ facts.jsonl
 facts/
 *.log
 .DS_Store
+
+*-watch.jsonl
