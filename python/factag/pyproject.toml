@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "factag"
-version = "0.1.0"
-description = "Fact-Augmented Generation (FAG) — RAG-shaped load → split → extract → normalize → store → assemble pipeline for verified facts. Pure standard library."
+version = "0.1.2"
+description = "Fact-Augmented Generation (FAG) ??? RAG-shaped load ??? split ??? extract ??? normalize ??? store ??? assemble pipeline for verified facts. Pure standard library."
 readme = "README.md"
 license = { text = "Apache-2.0" }
 authors = [{ name = "FAG contributors" }]

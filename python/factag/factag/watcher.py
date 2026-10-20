@@ -31,12 +31,12 @@ def normalize_source(source: str | tuple):
     return source
 
 
-def loader_for(source: tuple) -> BaseLoader:
+def loader_for(source: tuple, headers: dict | None = None) -> BaseLoader:
     kind, value = source
     if kind == "url":
-        return URLLoader(value)
+        return URLLoader(value, headers=headers)
     if kind == "sitemap":
-        return SitemapLoader(value)
+        return SitemapLoader(value, headers=headers)
     return DirectoryLoader(value)
 
 
@@ -60,19 +60,24 @@ async def poll_source(
     last_hash: str | None = None,
     prune_stale: bool = False,
     dedupe_across_runs: bool = True,
+    headers: dict | None = None,
 ) -> PollResult:
-    """One monitoring pass: fetch, hash, and (on change) re-ingest and report stale facts."""
+    """One monitoring pass: fetch, hash, and (on change) re-ingest and report stale facts.
+
+    headers: extra fetch headers — e.g. a browser user-agent for sites that block
+    non-browser bots ({"user-agent": "Mozilla/5.0 ..."}).
+    """
     src = normalize_source(source)
     splitter = splitter or RecursiveHeadingSplitter()
     extractor = extractor or HeuristicExtractor()
     loop = asyncio.get_running_loop()
 
-    docs = await loop.run_in_executor(None, loader_for(src).load)
+    docs = await loop.run_in_executor(None, loader_for(src, headers).load)
     digest = stable_hash("\x00".join(d.page_content for d in docs))
     if last_hash is not None and last_hash == digest:
         return PollResult(changed=False, hash=digest)
 
-    pipeline = IngestionPipeline(loader=loader_for(src), extractor=extractor, splitter=splitter, store=store)
+    pipeline = IngestionPipeline(loader=loader_for(src, headers), extractor=extractor, splitter=splitter, store=store)
     pipeline.dedupe_across_runs = dedupe_across_runs
     result = await pipeline.run()
 
@@ -82,7 +87,7 @@ async def poll_source(
         if srcval:
             doc_sources.add(str(srcval))
 
-    fresh_docs = await loop.run_in_executor(None, loader_for(src).load)
+    fresh_docs = await loop.run_in_executor(None, loader_for(src, headers).load)
     fresh_chunks: list[Document] = []
     for doc in fresh_docs:
         for piece in splitter.split_text(doc.page_content):
@@ -131,6 +136,7 @@ class WatchSession:
         splitter: RecursiveHeadingSplitter | None = None,
         prune_stale: bool = False,
         on_event: Callable[[WatchEvent], None] | None = None,
+        headers: dict | None = None,
     ) -> None:
         if interval_seconds < 5:
             raise ValueError("interval_seconds must be >= 5 (be kind to the websites you monitor)")
@@ -141,6 +147,7 @@ class WatchSession:
         self.splitter = splitter or RecursiveHeadingSplitter()
         self.prune_stale = prune_stale
         self.on_event = on_event
+        self.headers = headers
         self.stopped = False
         self._last_hash: str | None = None
         self._task: asyncio.Task | None = None
@@ -158,6 +165,7 @@ class WatchSession:
                 splitter=self.splitter,
                 last_hash=self._last_hash,
                 prune_stale=self.prune_stale,
+                headers=self.headers,
             )
             if result.changed:
                 self._last_hash = result.hash

@@ -23,6 +23,8 @@ python -m pip install build hatchling   # only needed to build the PyPI package
 
 ## Everyday commands
 
+- Watch (live): `factag watch <url|sitemap.xml|dir> --interval 60 --out live.jsonl [--prune] [--user-agent <ua>]`
+
 | Command | What it does |
 |---|---|
 | `npm run build` | tsc for all 3 npm packages |
@@ -80,6 +82,17 @@ Wheel + tarball gotchas learned the hard way:
   (Python: `invoke` / `to_context`, identical semantics).
 - `runIngest` dedupes across runs via `factKey` (sourceUrl + normalized text);
   the result carries `skippedFromStore`. Clearing the store resets.
+- **Watch (`pollSource` / `WatchSession`, `factag watch`):** hash change =
+  re-ingest with cross-run dedupe, `added === kept` (already counts only
+  store-new facts — do not subtract `skippedFromStore` again). Stale facts are
+  `removedCandidates` (facts still in the store from this source that the
+  fresh content no longer produces); they are deleted only with
+  `pruneStale`/`--prune` via `store.removeWhere`. `PollResult.ingest` carries
+  the raw `IngestResult`. Interval floor 5000 ms, enforced in the session API
+  and the CLI. `headers`/`--user-agent` are threaded into both fetches of a
+  poll (main + dry re-extract). Errors are per-tick events, never crashes.
+  TS and Python twins share identical poll/watch semantics; Python `removed`
+  is a separate list (mirror of `removedCandidates`).
 - Wire format is a contract: JSONL, first line `{"_type":"fag-store","version":1}`,
   fields `text/importance/category/sourceUrl/chunkId/metadata`. TS writes what
   Python reads, byte-identically.

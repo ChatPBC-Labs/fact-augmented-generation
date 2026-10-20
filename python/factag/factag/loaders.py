@@ -88,10 +88,11 @@ class BaseLoader(ABC):
         raise NotImplementedError
 
 
-def _fetch(url: str, timeout: float = 15.0) -> tuple[bytes, str | None]:
+def _fetch(url: str, timeout: float = 15.0, headers: dict | None = None) -> tuple[bytes, str | None]:
     import urllib.request
 
-    req = urllib.request.Request(url, headers={"user-agent": FACTAG_USER_AGENT})
+    merged = {"user-agent": FACTAG_USER_AGENT, **(headers or {})}
+    req = urllib.request.Request(url, headers=merged)
     with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310
         return resp.read(), resp.headers.get("content-type")
 
@@ -112,13 +113,14 @@ class TextLoader(BaseLoader):
 
 
 class URLLoader(BaseLoader):
-    def __init__(self, url: str, metadata: Metadata | None = None, timeout: float = 15.0) -> None:
+    def __init__(self, url: str, metadata: Metadata | None = None, timeout: float = 15.0, headers: dict | None = None) -> None:
         self.url = url
         self.metadata = metadata or {}
         self.timeout = timeout
+        self.headers = headers
 
     def load(self) -> list[Document]:
-        body_bytes, content_type = _fetch(self.url, self.timeout)
+        body_bytes, content_type = _fetch(self.url, self.timeout, self.headers)
         body = body_bytes.decode("utf-8", errors="replace")
         meta: Metadata = {"source": self.url, "url": self.url, **self.metadata}
         if looks_like_html(content_type, body[:500]):
@@ -130,13 +132,14 @@ class URLLoader(BaseLoader):
 
 
 class SitemapLoader(BaseLoader):
-    def __init__(self, sitemap_url: str, max_pages: int = 50, timeout: float = 15.0) -> None:
+    def __init__(self, sitemap_url: str, max_pages: int = 50, timeout: float = 15.0, headers: dict | None = None) -> None:
         self.sitemap_url = sitemap_url
         self.max_pages = max_pages
         self.timeout = timeout
+        self.headers = headers
 
     def _discover(self, url: str, depth: int = 0) -> list[str]:
-        body_bytes, _ = _fetch(url, self.timeout)
+        body_bytes, _ = _fetch(url, self.timeout, self.headers)
         xml = body_bytes.decode("utf-8", errors="replace")
         locs = [m.strip() for m in re.findall(r"<loc>\s*([\s\S]*?)\s*</loc>", xml, re.I)]
         if re.search(r"<sitemapindex[\s>]", xml, re.I) and depth < 2:
@@ -155,7 +158,7 @@ class SitemapLoader(BaseLoader):
         docs: list[Document] = []
         for url in urls:
             try:
-                docs.extend(URLLoader(url, timeout=self.timeout).load())
+                docs.extend(URLLoader(url, timeout=self.timeout, headers=self.headers).load())
             except Exception:
                 continue
         return docs

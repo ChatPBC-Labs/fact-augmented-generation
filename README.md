@@ -65,6 +65,30 @@ Side-by-side with the equivalent RAG pipeline: [`examples/rag-vs-fag.ts`](exampl
 | 5 | **Store** | `MemoryFactStore` / `FileFactStore` (JSONL) / `SQLiteFactStore` — plain local storage |
 | 6 | **Assemble** | `BudgetAssembler` packs facts by importance within a character budget; `KeywordRetriever` handles overflow |
 
+## FAG Watch — continuous website monitoring
+
+A store can follow a website and stay current on its own (added in 0.1.2–0.1.4,
+TypeScript and Python):
+
+```bash
+factag watch https://example.com/docs --interval 60 --out live.jsonl --prune
+#   WEBSITE CHANGED: +1 new fact(s), 12 unchanged, pruned 1 stale
+#   no change (hash 26578961)
+```
+
+- One pass = fetch → whitespace-stable hash → unchanged = nothing written;
+  changed = re-ingest with `factKey` cross-run dedupe (only genuinely new
+  sentences are added), then facts the site no longer reports are counted as
+  stale — `--prune` deletes them (`store.removeWhere`).
+- `WatchSession` loops forever, non-overlapping ticks, interval floor 5 s
+  ("be kind to the websites you monitor"). Emits `change` / `nochange` / `error`.
+- Bot-protected sites (e.g. behind cloudflare) that reject non-browser agents:
+  `--user-agent "<browser UA>"` on the CLI or `headers: { ... }` on
+  `pollSource` / `WatchSession`.
+- Errors are per-tick events, not crashes: a failed fetch logs and retries next interval.
+- Grounded answers always reflect the site *as it is now*: pair the store with
+  `factag ask --facts live.jsonl`.
+
 ## The class map (if you know RAG, you know FAG)
 
 | RAG | FAG |
@@ -96,7 +120,7 @@ Side-by-side with the equivalent RAG pipeline: [`examples/rag-vs-fag.ts`](exampl
 
 ```
 packages/factag/           core library (npm)
-packages/factag-cli/       CLI: factag index | ask | stats
+packages/factag-cli/       CLI: factag index | watch | ask | stats
 packages/factag-langchain/ LangChain FagRetriever drop-in
 python/factag/             Python twin (PyPI)
 spec/                      FAG Context Protocol specification

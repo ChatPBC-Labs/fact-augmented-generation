@@ -139,7 +139,7 @@ class TestWatcher(unittest.IsolatedAsyncioTestCase):
 
     def test_version(self):
         import factag
-        self.assertEqual(factag.VERSION, "0.1.1")
+        self.assertEqual(factag.VERSION, "0.1.2")
 
 
 if __name__ == "__main__":

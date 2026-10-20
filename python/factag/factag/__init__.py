@@ -36,7 +36,7 @@ from .watcher import (
     stable_hash,
 )
 
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 
 __all__ = [
     "Document",
