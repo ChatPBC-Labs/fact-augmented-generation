@@ -66,6 +66,24 @@ export class SqliteFactStore implements FactStore {
     this.db.exec("DELETE FROM fag_facts");
   }
 
+  async removeWhere(pred: (f: Fact) => boolean): Promise<number> {
+    const rows = this.db.prepare("SELECT seq, text, importance, category, source_url, chunk_id, metadata FROM fag_facts ORDER BY seq").all() as unknown as (FactRow & { seq: number })[];
+    const doomed = rows.map((row) => ({
+      seq: row.seq,
+      fact: {
+        text: row.text,
+        importance: Number(row.importance),
+        category: row.category,
+        sourceUrl: row.source_url,
+        ...(row.chunk_id ? { chunkId: row.chunk_id } : {}),
+        ...(row.metadata ? { metadata: JSON.parse(row.metadata) as Record<string, unknown> } : {}),
+      } as Fact,
+    })).filter((r) => pred(r.fact));
+    const del = this.db.prepare("DELETE FROM fag_facts WHERE seq = ?");
+    for (const r of doomed) del.run(r.seq);
+    return doomed.length;
+  }
+
   async size(): Promise<number> {
     const row = this.db.prepare("SELECT COUNT(*) AS n FROM fag_facts").get() as { n?: number } | undefined;
     return Number(row?.n ?? 0);

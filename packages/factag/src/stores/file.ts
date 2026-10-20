@@ -71,6 +71,15 @@ export class FileFactStore implements FactStore {
     await this.persist();
   }
 
+  async removeWhere(pred: (f: Fact) => boolean): Promise<number> {
+    await this.ensureLoaded();
+    const before = this.facts.length;
+    this.facts = this.facts.filter((f) => !pred(f));
+    const removed = before - this.facts.length;
+    if (removed > 0) await this.persist();
+    return removed;
+  }
+
   async size(): Promise<number> {
     await this.ensureLoaded();
     return this.facts.length;

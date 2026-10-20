@@ -11,6 +11,7 @@ import {
   TextLoader,
   URLLoader,
   SitemapLoader,
+  WatchSession,
   runIngest,
   VERSION,
 } from "factag";
@@ -67,6 +68,7 @@ const HELP = `factag ${VERSION} — Fact-Augmented Generation CLI
 
 Usage:
   factag index <url|sitemap.xml|path> [options]   ingest a source into a fact store
+  factag watch <url|sitemap.xml|path> [options]   live monitor: re-ingest on website change
   factag ask <question> [options]                 assemble the verified-facts context
   factag stats [options]                          show what is in the fact store
   factag export [options]                         dump the fact store
@@ -83,6 +85,14 @@ Options (index):
   --key-env <VAR>       env var holding the LLM key (default: FACTAG_LLM_KEY, then OPENAI_API_KEY)
   --no-normalize        keep raw extracted facts (no dedupe/rank)
   --quiet               no progress output
+
+Options (watch):
+  --interval <sec>      poll period in seconds (default: 300, min 5)
+  --out <file>          fact store path (default: facts.jsonl)
+  --prune               delete facts the website no longer produces
+  --chunk <n>           chunk size (default: 1000)
+  --llm / --model / --base-url / --key-env   same as index
+  Ctrl+C stops watching; every event prints a diff line.
 
 Options (ask / stats / export):
   --facts <file>        fact store path (default: facts.jsonl)
@@ -119,32 +129,37 @@ async function buildLoader(source: string, args: Args): Promise<DirectoryLoader 
   return new TextLoader(raw, { metadata: { url: `file://${resolve(source)}`, source: `file://${resolve(source)}` } });
 }
 
+async function buildExtractor(args: Args, quiet: boolean, extractionFailures: string[]) {
+  if (!bool(args, "llm")) {
+    return new HeuristicExtractor();
+  }
+  const keyEnv = str(args, "key-env") ?? "FACTAG_LLM_KEY";
+  const apiKey = process.env[keyEnv] ?? process.env.OPENAI_API_KEY;
+  if (!apiKey) fail(`--llm requires an API key: set ${keyEnv} or OPENAI_API_KEY`);
+  return new LLMExtractor({
+    apiKey,
+    model: str(args, "model"),
+    baseUrl: str(args, "base-url"),
+    onError: (batch, error) => {
+      extractionFailures.push(`batch ${batch}: ${error.message}`);
+      if (!quiet) process.stderr.write(`error: extraction batch ${batch} failed: ${error.message}\n`);
+    },
+  });
+}
+
+function buildSplitter(args: Args): RecursiveHeadingSplitter {
+  return new RecursiveHeadingSplitter({ chunkSize: num(args, "chunk") ?? 1000, chunkOverlap: 100 });
+}
+
 async function commandIndex(source: string | undefined, args: Args): Promise<void> {
   if (!source) fail("index requires a source (url, sitemap.xml, file, or directory)");
   const outPath = resolve(str(args, "out") ?? "facts.jsonl");
   const quiet = bool(args, "quiet");
 
   const loader = await buildLoader(source, args);
-  const splitter = new RecursiveHeadingSplitter({ chunkSize: num(args, "chunk") ?? 1000, chunkOverlap: 100 });
-
-  let extractor;
+  const splitter = buildSplitter(args);
   const extractionFailures: string[] = [];
-  if (bool(args, "llm")) {
-    const keyEnv = str(args, "key-env") ?? "FACTAG_LLM_KEY";
-    const apiKey = process.env[keyEnv] ?? process.env.OPENAI_API_KEY;
-    if (!apiKey) fail(`--llm requires an API key: set ${keyEnv} or OPENAI_API_KEY`);
-    extractor = new LLMExtractor({
-      apiKey,
-      model: str(args, "model"),
-      baseUrl: str(args, "base-url"),
-      onError: (batch, error) => {
-        extractionFailures.push(`batch ${batch}: ${error.message}`);
-        if (!quiet) process.stderr.write(`error: extraction batch ${batch} failed: ${error.message}\n`);
-      },
-    });
-  } else {
-    extractor = new HeuristicExtractor();
-  }
+  const extractor = await buildExtractor(args, quiet, extractionFailures);
 
   const store = new FileFactStore(outPath);
   const result = await runIngest({
@@ -246,6 +261,47 @@ async function commandExport(args: Args): Promise<void> {
   fail(`unknown format: ${format}`);
 }
 
+async function commandWatch(source: string | undefined, args: Args): Promise<void> {
+  if (!source) fail("watch requires a source (url, sitemap.xml, or directory)");
+  const outPath = resolve(str(args, "out") ?? "facts.jsonl");
+  const quiet = bool(args, "quiet");
+  const intervalSec = num(args, "interval") ?? 300;
+  if (intervalSec < 5) fail("--interval must be >= 5 seconds");
+  const store = new FileFactStore(outPath);
+  const splitter = buildSplitter(args);
+  const extractionFailures: string[] = [];
+  const extractor = await buildExtractor(args, quiet, extractionFailures);
+
+  const fmt = "  " + new Date().toISOString().slice(11, 19);
+  process.stderr.write(`watching ${source} every ${intervalSec}s -> ${outPath}\n`);
+  const session = new WatchSession({
+    source,
+    store,
+    splitter,
+    extractor,
+    intervalMs: intervalSec * 1000,
+    pruneStale: bool(args, "prune"),
+    onEvent: (event) => {
+      if (event.kind === "nochange") {
+        if (!quiet) process.stderr.write(`${fmt} no change (hash ${event.hash})\n`);
+      } else if (event.kind === "error") {
+        process.stderr.write(`${fmt} error: ${event.error instanceof Error ? event.error.message : String(event.error)}\n`);
+      } else {
+        const staleNote = event.pruned > 0 ? `, pruned ${event.pruned} stale` : event.removedCandidates.length > 0 ? `, ${event.removedCandidates.length} stale candidate(s) (use --prune to delete)` : "";
+        process.stderr.write(
+          `${fmt} WEBSITE CHANGED: +${event.added} new fact(s), ${event.skippedFromStore} unchanged${staleNote}\n`
+        );
+      }
+    },
+  });
+  session.start();
+  process.on("SIGINT", () => {
+    session.stop();
+    process.stderr.write("\nwatch stopped\n");
+    process.exit(0);
+  });
+}
+
 async function main(): Promise<void> {
   const [command, ...rest] = process.argv.slice(2);
   const args = parseArgs(rest);
@@ -260,6 +316,10 @@ async function main(): Promise<void> {
   }
   if (command === "index") {
     await commandIndex(args.positional[0], args);
+    return;
+  }
+  if (command === "watch") {
+    await commandWatch(args.positional[0], args);
     return;
   }
   if (command === "ask") {

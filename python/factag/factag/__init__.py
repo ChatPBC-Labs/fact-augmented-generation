@@ -27,8 +27,16 @@ from .retrievers import (
 )
 from .splitter import RecursiveHeadingSplitter, DEFAULT_SEPARATORS
 from .stores import FileFactStore, MemoryFactStore
+from .watcher import (
+    PollResult,
+    WatchEvent,
+    WatchSession,
+    normalize_source,
+    poll_source,
+    stable_hash,
+)
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 
 __all__ = [
     "Document",
@@ -60,5 +68,11 @@ __all__ = [
     "DEFAULT_SEPARATORS",
     "FileFactStore",
     "MemoryFactStore",
+    "poll_source",
+    "stable_hash",
+    "normalize_source",
+    "WatchSession",
+    "WatchEvent",
+    "PollResult",
     "VERSION",
 ]

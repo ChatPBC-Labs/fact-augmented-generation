@@ -23,6 +23,11 @@ class MemoryFactStore:
     def add(self, facts: list[Fact]) -> None:
         self._facts.extend(facts)
 
+    def remove_where(self, predicate) -> int:
+        before = len(self._facts)
+        self._facts = [f for f in self._facts if not predicate(f)]
+        return before - len(self._facts)
+
     def all(self) -> list[Fact]:
         return list(self._facts)
 
@@ -62,6 +67,16 @@ class FileFactStore:
         self._load()
         assert self._facts is not None
         self._facts.extend(facts)
+
+    def remove_where(self, predicate) -> int:
+        self._load()
+        assert self._facts is not None
+        before = len(self._facts)
+        self._facts = [f for f in self._facts if not predicate(f)]
+        removed = before - len(self._facts)
+        if removed:
+            self.flush()
+        return removed
 
     def all(self) -> list[Fact]:
         self._load()

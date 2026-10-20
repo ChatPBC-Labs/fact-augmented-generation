@@ -24,6 +24,12 @@ export class MemoryFactStore implements FactStore {
     this.facts = [];
   }
 
+  async removeWhere(pred: (f: Fact) => boolean): Promise<number> {
+    const before = this.facts.length;
+    this.facts = this.facts.filter((f) => !pred(f));
+    return before - this.facts.length;
+  }
+
   async size(): Promise<number> {
     return this.facts.length;
   }

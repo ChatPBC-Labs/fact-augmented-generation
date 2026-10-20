@@ -12,3 +12,8 @@ export interface FactStore {
   asAssembler(options?: AssemblerOptions): BudgetAssembler;
   asKeywordRetriever(options?: KeywordRetrieverOptions): KeywordRetriever;
 }
+
+/** Optional store capability used by the live watcher to prune stale facts. */
+export interface PrunableFactStore extends FactStore {
+  removeWhere(pred: (f: Fact) => boolean): Promise<number>;
+}
