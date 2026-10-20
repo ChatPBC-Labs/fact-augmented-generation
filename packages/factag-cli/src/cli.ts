@@ -272,7 +272,7 @@ async function commandWatch(source: string | undefined, args: Args): Promise<voi
   const extractionFailures: string[] = [];
   const extractor = await buildExtractor(args, quiet, extractionFailures);
 
-  const fmt = "  " + new Date().toISOString().slice(11, 19);
+  const fmt = () => "  " + new Date().toISOString().slice(11, 19);
   process.stderr.write(`watching ${source} every ${intervalSec}s -> ${outPath}\n`);
   const session = new WatchSession({
     source,
@@ -283,9 +283,9 @@ async function commandWatch(source: string | undefined, args: Args): Promise<voi
     pruneStale: bool(args, "prune"),
     onEvent: (event) => {
       if (event.kind === "nochange") {
-        if (!quiet) process.stderr.write(`${fmt} no change (hash ${event.hash})\n`);
+        if (!quiet) process.stderr.write(`${fmt()} no change (hash ${event.hash})\n`);
       } else if (event.kind === "error") {
-        process.stderr.write(`${fmt} error: ${event.error instanceof Error ? event.error.message : String(event.error)}\n`);
+        process.stderr.write(`${fmt()} error: ${event.error instanceof Error ? event.error.message : String(event.error)}\n`);
       } else {
         const staleNote = event.pruned > 0 ? `, pruned ${event.pruned} stale` : event.removedCandidates.length > 0 ? `, ${event.removedCandidates.length} stale candidate(s) (use --prune to delete)` : "";
         process.stderr.write(
