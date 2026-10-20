@@ -116,6 +116,118 @@ Wheel + tarball gotchas learned the hard way:
 - Importance is always clamped to 1..5 at every entry point (`createFact`,
   `coerceImportance`, Python `to_wire`/`from_wire`).
 
+  ## Build your own website-watcher automation
+
+FAG Watch ("monitor a website, keep my fact store current, alert me when it
+changes") is just a **loop over one function**. There are two levels to hook into:
+
+- **Full automation for you:** `WatchSession` (TS) / `WatchSession` (Python)
+  already handles the interval, prevents overlapping passes, reports per-tick
+  errors as events (never crashes), and enforces the 5000 ms floor. You only
+  react to events.
+- **Building it yourself:** call `pollSource` / `poll_source` once per cycle.
+  Useful for cron-style one-shot jobs, serverless handlers, or when you want
+  your own scheduling around the pass.
+
+### TS recipe — WatchSession + persistence + notification
+
+```ts
+// watcher.mjs — node watcher.mjs  (ESM, zero extra deps)
+import { readFileSync, writeFileSync } from "node:fs";
+import {
+  FileFactStore, HeuristicExtractor, WatchSession,
+} from "factag";
+
+const STATE = "./.watcher-state.json";      // survives restarts
+const state = (() => { try { return JSON.parse(readFileSync(STATE, "utf8")); } catch { return {}; } })();
+
+const session = new WatchSession({
+  source: process.argv[2] ?? "https://example.com/docs",
+  intervalMs: 60_000,                       // floor is 5000 — be kind
+  pruneStale: true,                         // delete facts the site dropped
+  headers: { "user-agent": "Mozilla/5.0 example-watcher/1.0" },
+  store: new FileFactStore("./live.jsonl"), // the fact store itself persists
+  onEvent: (e) => {
+    if (e.kind === "change") {
+      if (state.hash && e.added === 0 && e.pruned === 0) return; // reflow only
+      console.log("changed:", { added: e.added, pruned: e.pruned });
+      notify(`website changed: +${e.added} new, -${e.pruned} stale`); // your hook (Slack/webhook/email)
+      writeFileSync(STATE, JSON.stringify({ hash: e.hash }));
+    } else if (e.kind === "nochange") {
+      console.log("no change (hash", e.hash + ")");
+    } else {
+      console.error("tick failed (retried next interval):", e.error);
+    }
+  },
+});
+function notify(text) { /* POST to your webhook here */ }
+session.start();
+```
+
+Run it forever under `pm2`/`systemd`/`nodemon`, in a container, or as a Node
+child process — errors never take it down, the next tick retries.
+
+### Python twin — same shape
+
+```python
+# watcher.py — python watcher.py https://example.com/docs
+import asyncio
+from factag import FileFactStore, HeuristicExtractor, WatchSession
+
+async def main():
+    def on_event(e):
+        if e.kind == "change":
+            print("changed:", e.result.added, "new,", e.result.pruned, "pruned")
+        elif e.kind == "nochange":
+            print("no change (hash", e.hash + ")")
+        else:
+            print("tick failed (retried):", e.error)
+
+    session = WatchSession(
+        source="https://example.com/docs",
+        interval=60,                          # seconds; floor is 5
+        prune_stale=True,
+        store=FileFactStore("./live.jsonl"),
+        on_event=on_event,
+    )
+    await asyncio.sleep(3600)                 # or keep it running however you like
+    session.stop()
+
+asyncio.run(main())
+```
+
+### Cron / one-shot variant (no long-running process)
+
+If you would rather not hold a process open, run **one poll per cron
+invocation** and persist `lastHash` yourself — it is what turns
+"re-index everything" into "detect a change":
+
+```ts
+const store = new FileFactStore("./live.jsonl");
+const { hash, added, removedCandidates } = await pollSource({
+  source: "https://example.com/docs",
+  store,
+  extractor: new HeuristicExtractor(),
+  lastHash: readJson(STATE).hash,   // REQUIRED for change detection; without it every run re-ingests
+  pruneStale: true,
+});
+writeJson(STATE, { hash });
+```
+
+Notes that matter:
+
+- **Resume semantics:** the fact store is already persistent; only the `hash`
+  is session-local. Persisting it yourself avoids one harmless re-ingest after
+  restart (cross-run dedupe keeps the store correct either way).
+- **Stale facts** are only *reported* by default (`removedCandidates` /
+  `removed_candidates`); they are deleted from the store only when
+  `pruneStale: true` / `prune_stale=True`. Requires a store that implements
+  `removeWhere` (all bundled stores do).
+- **Bot-protected sites:** pass browser-like headers (`headers` /
+  `--user-agent` on the CLI). They are threaded into both fetches of a pass.
+- **Never schedule faster than 5 seconds** — the session API throws below the
+  floor on purpose; honor it in your own loops too.
+
 ## Firewall
 
 `.github/scripts/firewall-check.mjs` fails CI if any file contains strings from
