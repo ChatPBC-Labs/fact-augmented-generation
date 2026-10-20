@@ -1,6 +1,6 @@
 {
   "name": "factag-cli",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "CLI for Fact-Augmented Generation — index sources into facts, assemble verified-facts context for any LLM.",
   "license": "Apache-2.0",
   "type": "module",

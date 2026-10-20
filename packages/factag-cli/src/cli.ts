@@ -294,7 +294,7 @@ async function commandWatch(source: string | undefined, args: Args): Promise<voi
       } else {
         const staleNote = event.pruned > 0 ? `, pruned ${event.pruned} stale` : event.removedCandidates.length > 0 ? `, ${event.removedCandidates.length} stale candidate(s) (use --prune to delete)` : "";
         process.stderr.write(
-          `${fmt} WEBSITE CHANGED: +${event.added} new fact(s), ${event.skippedFromStore} unchanged${staleNote}\n`
+          `${fmt()} WEBSITE CHANGED: +${event.added} new fact(s), ${event.skippedFromStore} unchanged${staleNote}\n`
         );
       }
     },
