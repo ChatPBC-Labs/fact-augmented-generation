@@ -69,6 +69,8 @@ const HELP = `factag ${VERSION} — Fact-Augmented Generation CLI
 Usage:
   factag index <url|sitemap.xml|path> [options]   ingest a source into a fact store
   factag watch <url|sitemap.xml|path> [options]   live monitor: re-ingest on website change
+                                                 [--interval <sec>] [--out <file>] [--prune] [--quiet]
+                                                 [--user-agent <ua>]  (browser UA for bot-protected sites)
   factag ask <question> [options]                 assemble the verified-facts context
   factag stats [options]                          show what is in the fact store
   factag export [options]                         dump the fact store
@@ -271,6 +273,8 @@ async function commandWatch(source: string | undefined, args: Args): Promise<voi
   const splitter = buildSplitter(args);
   const extractionFailures: string[] = [];
   const extractor = await buildExtractor(args, quiet, extractionFailures);
+  const userAgent = str(args, "user-agent");
+  const headers = userAgent ? { "user-agent": userAgent } : undefined;
 
   const fmt = () => "  " + new Date().toISOString().slice(11, 19);
   process.stderr.write(`watching ${source} every ${intervalSec}s -> ${outPath}\n`);
@@ -281,6 +285,7 @@ async function commandWatch(source: string | undefined, args: Args): Promise<voi
     extractor,
     intervalMs: intervalSec * 1000,
     pruneStale: bool(args, "prune"),
+    headers,
     onEvent: (event) => {
       if (event.kind === "nochange") {
         if (!quiet) process.stderr.write(`${fmt()} no change (hash ${event.hash})\n`);

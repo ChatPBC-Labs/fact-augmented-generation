@@ -37,12 +37,12 @@ export function normalizeSource(source: string | WatchSource): WatchSource {
   return { type: "dir", path: source };
 }
 
-function loaderFor(source: WatchSource): BaseLoader {
+function loaderFor(source: WatchSource, headers?: Record<string, string>): BaseLoader {
   switch (source.type) {
     case "url":
-      return new URLLoader(source.url);
+      return new URLLoader(source.url, { headers });
     case "sitemap":
-      return new SitemapLoader(source.url);
+      return new SitemapLoader(source.url, headers ? { loaderOptions: { headers } } : {});
     case "dir":
       return new DirectoryLoader(source.path);
   }
@@ -60,6 +60,8 @@ export interface PollOptions {
   lastHash?: string;
   pruneStale?: boolean;
   dedupeAcrossRuns?: boolean;
+  /** extra fetch headers — e.g. a browser user-agent for sites that block non-browser bots */
+  headers?: Record<string, string>;
 }
 
 export interface PollResult {
@@ -84,7 +86,7 @@ export async function pollSource(options: PollOptions): Promise<PollResult> {
   const source = normalizeSource(options.source);
   const splitter = options.splitter ?? new RecursiveHeadingSplitter();
 
-  const first = loaderFor(source);
+  const first = loaderFor(source, options.headers);
   const documents = await first.load();
   const hash = stableHash(documents.map((d) => d.pageContent).join("\u0000"));
   if (options.lastHash && options.lastHash === hash) {
@@ -108,7 +110,7 @@ export async function pollSource(options: PollOptions): Promise<PollResult> {
   }
 
   // fresh fact keys produced by the current content (dry re-extract, no store writes)
-  const dryLoader = loaderFor(source);
+  const dryLoader = loaderFor(source, options.headers);
   const dryChunks = splitter.splitDocuments(await dryLoader.load());
   const freshFacts = await options.extractor.extractDocuments(dryChunks);
   const freshKeys = new Set(freshFacts.map(factKey));
