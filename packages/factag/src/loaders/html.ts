@@ -66,7 +66,9 @@ export function htmlToText(html: string, options: HtmlToTextOptions = {}): strin
     .replace(BLOCK_CLOSE, "\n")
     .replace(BLOCK_OPEN, "\n")
     .replace(/<br\s*\/?>/gi, "\n")
-    .replace(ANY_TAG, "")
+    // inline tags must separate adjacent text nodes ("Product"+"Sep 29" must
+    // not fuse into "ProductSep") - drop them to a space, not to empty string
+    .replace(ANY_TAG, " ")
     .replace(/&nbsp;/gi, " ");
   out = decodeEntities(out)
     .split("\n")
