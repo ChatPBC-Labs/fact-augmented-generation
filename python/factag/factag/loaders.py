@@ -64,7 +64,7 @@ def html_to_text(html: str, remove_chrome: bool = True) -> str:
     out = _BLOCK_CLOSE.sub("\n", out)
     out = _BLOCK_OPEN.sub("\n", out)
     out = re.sub(r"<br\s*/?>", "\n", out, flags=re.I)
-    out = _ANY_TAG.sub("", out)
+    out = _ANY_TAG.sub(" ", out)
     out = out.replace("&nbsp;", " ")
     out = decode_entities(out)
     lines = [re.sub(r"[ \t]+", " ", line).strip() for line in out.split("\n")]
