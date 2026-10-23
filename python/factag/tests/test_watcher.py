@@ -1,6 +1,7 @@
 import asyncio
 import http.server
 import pathlib
+import re
 import threading
 from tempfile import TemporaryDirectory
 
@@ -139,7 +140,14 @@ class TestWatcher(unittest.IsolatedAsyncioTestCase):
 
     def test_version(self):
         import factag
-        self.assertEqual(factag.VERSION, "0.1.3")
+        root = pathlib.Path(__file__).resolve().parents[1]
+        try:
+            import tomllib
+            expected = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+        except ModuleNotFoundError:  # Python < 3.11: regex-parse the version line
+            match = re.search(r'^version = "([^"]+)"', (root / "pyproject.toml").read_text(encoding="utf-8"), re.M)
+            expected = match.group(1)
+        self.assertEqual(factag.VERSION, expected)
 
 
 if __name__ == "__main__":
