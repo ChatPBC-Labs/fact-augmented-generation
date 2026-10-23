@@ -8,6 +8,7 @@ import {
   FileFactStore,
   HeuristicExtractor,
   LLMExtractor,
+  MemoryFactStore,
   RecursiveHeadingSplitter,
   TextLoader,
   URLLoader,
@@ -79,6 +80,7 @@ Usage:
   factag ask <question> [options]                 assemble the verified-facts context
   factag stats [options]                          show what is in the fact store
   factag export [options]                         dump the fact store
+  factag doctor                                   self-check: full pipeline in memory, no network, no keys
   factag version                                  print version
   factag help                                     show this help
 
@@ -312,6 +314,52 @@ async function commandWatch(source: string | undefined, args: Args): Promise<voi
   });
 }
 
+async function commandDoctor(): Promise<void> {
+  const page = [
+    "<article>",
+    "  <h1>Doctor Demo</h1>",
+    "  <p>The Starter plan costs $12 per user per month and includes 5,000 runs.</p>",
+    "  <p>API rate limit is 120 requests per minute on Starter and 600 requests per minute on Team.</p>",
+    "</article>",
+  ].join("\n");
+  const meta = { source: "doctor://self", url: "doctor://self", title: "Doctor Demo" };
+  const started = Date.now();
+  try {
+    const loader = new TextLoader(page, { format: "html", metadata: meta });
+    const docs = await loader.load();
+    if (docs.length === 0) throw new Error("TextLoader produced 0 documents");
+    const chunks = new RecursiveHeadingSplitter().splitDocuments(docs);
+    if (chunks.length === 0) throw new Error("splitter produced 0 chunks");
+
+    const store = new MemoryFactStore();
+    const ingest = await runIngest({ loader, splitter: new RecursiveHeadingSplitter(), extractor: new HeuristicExtractor(), store });
+    if (ingest.kept === 0) throw new Error("heuristic extractor produced 0 facts");
+    const stored = await store.all();
+    if (stored.length !== ingest.kept) throw new Error(`store has ${stored.length} facts, expected ${ingest.kept}`);
+
+    const out = await new BudgetAssembler(store, { budget: 2000 }).assemble("starter plan cost", { k: 8 });
+    if (out.included.length === 0) throw new Error("assembler returned 0 facts");
+    if (!out.context.includes("=== VERIFIED FACTS ===")) throw new Error("missing verified-facts header");
+    if (!out.context.includes("$12")) throw new Error("the pricing fact did not survive the pipeline");
+
+    process.stdout.write(
+      `ok  load               ${docs.length} document\n` +
+      `ok  split              ${chunks.length} chunk\n` +
+      `ok  extract            ${ingest.kept} facts (zero keys)\n` +
+      `ok  normalize + store  ${stored.length} facts in memory\n` +
+      `ok  assemble           ${out.included.length} facts, ${out.chars} chars, citations on\n` +
+      `\n${BANNER} healthy in ${Date.now() - started}ms — installation verified.\n` +
+      `Next step: factag index <url|path> --out facts.jsonl\n`,
+    );
+  } catch (err) {
+    process.stderr.write(
+      `FAIL: ${err instanceof Error ? err.message : String(err)}\n` +
+      `the pipeline broke before your first fact — please open an issue with this output\n`,
+    );
+    process.exit(1);
+  }
+}
+
 async function main(): Promise<void> {
   const [command, ...rest] = process.argv.slice(2);
   const args = parseArgs(rest);
@@ -342,6 +390,10 @@ async function main(): Promise<void> {
   }
   if (command === "export") {
     await commandExport(args);
+    return;
+  }
+  if (command === "doctor") {
+    await commandDoctor();
     return;
   }
   fail(`unknown command: ${command} (try "factag help")`);

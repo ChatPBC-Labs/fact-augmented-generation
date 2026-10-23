@@ -1,6 +1,6 @@
 {
   "name": "factag",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Fact-Augmented Generation â€” extract facts once, inject on every call. A RAG-shaped grounding library with zero runtime dependencies.",
   "license": "Apache-2.0",
   "type": "module",

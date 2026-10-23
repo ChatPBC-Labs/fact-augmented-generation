@@ -49,6 +49,9 @@ npm install factag          # core (TypeScript, zero runtime dependencies)
 npm install factag-cli      # command line
 npm install factag-langchain  # drop-in FagRetriever for LangChain apps
 pip install factag          # Python twin
+
+# 60-second proof that the install works — no network, no keys, exit 0 = healthy:
+npm install factag-cli && npx factag doctor
 ```
 
 ## Quickstart

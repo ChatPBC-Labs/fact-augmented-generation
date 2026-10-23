@@ -22,4 +22,4 @@ export type {
   WatchSessionOptions,
 } from "./watcher/site-watcher.js";
 
-export const VERSION = "0.1.4";
+export const VERSION = "0.1.6";

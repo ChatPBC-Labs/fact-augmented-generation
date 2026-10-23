@@ -6,9 +6,24 @@ Command-line interface for Fact-Augmented Generation (FAG).
 npm install -g factag-cli
 ```
 
+**Verify your install in 1 second** (no network, no keys, offline):
+
+```bash
+$ factag doctor
+ok  load               1 document
+ok  split              1 chunk
+ok  extract            2 facts (zero keys)
+ok  normalize + store  2 facts in memory
+ok  assemble           2 facts, 305 chars, citations on
+
+factag-cli 0.1.6 (core factag 0.1.5) healthy in 20ms — installation verified.
+```
+
 ## Commands
 
 | Command | What it does |
+|---|---|
+| `factag doctor` | self-check: runs load → split → extract → normalize → store → assemble entirely in memory (no network, no keys). Exit 0 = install healthy |
 |---|---|
 | `factag index <url\|sitemap.xml\|dir> --out facts.jsonl` | load → split → extract → normalize → store (idempotent: re-running never duplicates facts) |
 | `factag watch <url\|sitemap.xml\|path> --interval <sec> --out live.jsonl` | continuous website monitoring — prints `WEBSITE CHANGED` and keeps the store current forever |

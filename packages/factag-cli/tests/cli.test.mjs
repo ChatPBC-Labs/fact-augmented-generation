@@ -24,6 +24,13 @@ test("factag help lists commands", () => {
   assert.match(out, /stats/);
 });
 
+test("doctor verifies the full pipeline offline", () => {
+  const out = run("doctor");
+  assert.match(out, /ok\s{2}load\s+1 document/);
+  assert.match(out, /extract\s+\d+ facts \(zero keys\)/);
+  assert.match(out, /healthy in \d+ms/);
+});
+
 test("index → stats → ask end-to-end", () => {
   const dir = mkdtempSync(path.join(tmpdir(), "factag-cli-"));
   const doc = path.join(dir, "pricing.md");
