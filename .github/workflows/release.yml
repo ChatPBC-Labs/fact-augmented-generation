@@ -33,14 +33,11 @@ jobs:
       - run: npm test
       - run: npm run firewall
       - name: Publish factag
-        run: npm publish --provenance --access public
-        working-directory: packages/factag
+        run: node .github/scripts/publish-if-new.mjs packages/factag
       - name: Publish factag-cli
-        run: npm publish --provenance --access public
-        working-directory: packages/factag-cli
+        run: node .github/scripts/publish-if-new.mjs packages/factag-cli
       - name: Publish factag-langchain
-        run: npm publish --provenance --access public
-        working-directory: packages/factag-langchain
+        run: node .github/scripts/publish-if-new.mjs packages/factag-langchain
 
   publish-pypi:
     runs-on: ubuntu-latest
@@ -53,6 +50,13 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m unittest discover -s tests -v
+      - name: Skip if version already on PyPI
+        id: pypi_check
+        run: |
+          python -c "import json,urllib.request,tomllib,pathlib; v=tomllib.loads(pathlib.Path('pyproject.toml').read_text(encoding='utf-8'))['project']['version']; d=json.load(urllib.request.urlopen('https://pypi.org/pypi/factag/json')); print('skip=true' if v in d['releases'] else 'skip=false')" >> "$GITHUB_OUTPUT"
       - run: pip install build
+        if: steps.pypi_check.outputs.skip != 'true'
       - run: python -m build
+        if: steps.pypi_check.outputs.skip != 'true'
       - uses: pypa/gh-action-pypi-publish@release/v1
+        if: steps.pypi_check.outputs.skip != 'true'
