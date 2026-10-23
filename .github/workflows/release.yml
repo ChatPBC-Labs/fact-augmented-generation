@@ -60,3 +60,5 @@ jobs:
         if: steps.pypi_check.outputs.skip != 'true'
       - uses: pypa/gh-action-pypi-publish@release/v1
         if: steps.pypi_check.outputs.skip != 'true'
+        with:
+          packages_dir: python/factag/dist
